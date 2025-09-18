@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>影片投票</title>
+  <style>
+    body { 
+      font-family: Arial, sans-serif; 
+      background: #f5f5f5; 
+      padding: 20px; 
+      text-align: center;
+    }
+
+    #videos {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+    }
+
+    .video-card {
+      background: rgb(228, 242, 255); 
+      padding: 15px; 
+      border-radius: 12px; 
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      width: 480px;
+      box-sizing: border-box;
+    }
+
+    .video-title {
+      font-weight: bold;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+
+    iframe.video-frame { 
+      width: 100%; 
+      height: 260px; 
+      border-radius: 8px; 
+      display: block; 
+      margin: 0 auto; 
+    }
+
+    button {
+      margin-top: 12px; 
+      padding: 10px 20px; 
+      font-size: 16px;
+      border: none; 
+      border-radius: 8px; 
+      background: #77737a; 
+      color: white; 
+      cursor: pointer;
+      display: block; 
+      margin-left: auto; 
+      margin-right: auto;
+    }
+
+    button:disabled { 
+      background: rgb(187, 232, 253); 
+      cursor: not-allowed; 
+    }
+
+    iframe.hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <h2>AI多國語言衛教影片競賽票選活動 (*最多可投3票)</h2>
+
+  <div id="videos"></div>
+
+  <script>
+    const GOOGLE_APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwbb4-qQCpxX9bfI4y-PGN3RGVvMYVPRY1lC7UyiwNWxXA5mYn6DnDCFD3AY4JtZ8bNGQ/exec"; // <-- 替換成你部署的 Web App URL
+
+    const videos = [
+      { id: 1, title: "影片1", url: "https://www.youtube.com/embed/a6lOmFIe_Qo" },
+      { id: 2, title: "影片2", url: "https://www.youtube.com/embed/Cl2xVJwOgU0" },
+      { id: 3, title: "影片3", url: "https://www.youtube.com/embed/a6lOmFIe_Qo" },
+      { id: 4, title: "影片4", url: "https://www.youtube.com/embed/Cl2xVJwOgU0" },
+      { id: 5, title: "影片5", url: "https://www.youtube.com/embed/a6lOmFIe_Qo" },
+      { id: 6, title: "影片6", url: "https://www.youtube.com/embed/Cl2xVJwOgU0" },
+      { id: 7, title: "影片7", url: "https://www.youtube.com/embed/a6lOmFIe_Qo" },
+      { id: 8, title: "影片8", url: "https://www.youtube.com/embed/Cl2xVJwOgU0" },
+      { id: 9, title: "影片9", url: "https://www.youtube.com/embed/a6lOmFIe_Qo" },
+      { id: 10, title: "影片10", url: "https://www.youtube.com/embed/Cl2xVJwOgU0" },
+      { id: 11, title: "影片11", url: "https://www.youtube.com/embed/a6lOmFIe_Qo" },
+      { id: 12, title: "影片12", url: "https://www.youtube.com/embed/Cl2xVJwOgU0" },
+      { id: 13, title: "影片13", url: "https://www.youtube.com/embed/a6lOmFIe_Qo" },
+      { id: 14, title: "影片14", url: "https://www.youtube.com/embed/Cl2xVJwOgU0" },
+      { id: 15, title: "影片15", url: "https://www.youtube.com/embed/a6lOmFIe_Qo" },
+      { id: 16, title: "影片16", url: "https://www.youtube.com/embed/Cl2xVJwOgU0" },
+    ];
+
+    let votesLeft = 3;
+    let voted = [];
+
+    const container = document.getElementById("videos");
+
+    function renderVideos() {
+      container.innerHTML = "";
+      videos.forEach(video => {
+        const card = document.createElement("div");
+        card.className = "video-card";
+
+        const iframeName = "hidden_iframe_" + video.id;
+
+        card.innerHTML = `
+          <div class="video-title">${video.title}</div>
+          <iframe class="video-frame" src="${video.url}" allowfullscreen></iframe>
+          <form action="${GOOGLE_APPS_SCRIPT_URL}" method="POST" target="${iframeName}">
+            <input type="hidden" name="videoId" value="${video.id}">
+            <button type="submit" id="btn-${video.id}">投票</button>
+          </form>
+          <iframe name="${iframeName}" class="hidden"></iframe>
+        `;
+        container.appendChild(card);
+
+        const btn = document.getElementById(`btn-${video.id}`);
+        btn.addEventListener("click", e => {
+          if (votesLeft <= 0) {
+            alert("你已經用完 3 票囉！");
+            e.preventDefault();
+            return;
+          }
+          if (voted.includes(video.id)) {
+            alert("你已經投過這部影片囉！");
+            e.preventDefault();
+            return;
+          }
+          votesLeft--;
+          voted.push(video.id);
+
+          if (votesLeft === 0) {
+            document.querySelectorAll("button").forEach(b => b.disabled = true);
+          }
+          alert("投票成功！");
+        });
+      });
+    }
+
+    renderVideos();
+  </script>
+</body>
+</html>
