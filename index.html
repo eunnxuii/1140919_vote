@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>影片投票</title>
+  <style>
+    body { font-family: Arial; background: #f5f5f5; padding: 20px; text-align: center; }
+    #videos { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; }
+    .video-card { background: #e4f2ff; padding: 15px; border-radius: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); width: 480px; box-sizing: border-box; }
+    .video-title { font-weight: bold; margin-bottom: 10px; text-align: center; }
+    iframe { width: 100%; height: 260px; border-radius: 8px; display: block; margin: 0 auto; }
+    button { margin-top: 12px; padding: 10px 20px; font-size: 16px; border: none; border-radius: 8px; background: #77737a; color: white; cursor: pointer; display: block; margin: 0 auto; }
+    button:disabled { background: #bbe8fd; cursor: not-allowed; }
+  </style>
+</head>
+<body>
+<h2>AI多國語言衛教影片競賽票選活動 (*最多可投3票)</h2>
+<div id="videos"></div>
+
+<script>
+const GOOGLE_APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwFCS60QY0zoTJtLarWAvAY261GDSbzNlwsBNVh4-hHKbxHuqGS5P_xs7PBd-JpNFlCLg/exec"; // <- 改成你部署的 Web App URL
+
+const videos = [
+  {id:1,title:"1.免開刀止痛療法--微細動脈栓塞術",url:"https://www.youtube.com/embed/a6lOmFIe_Qo"},
+  {id:2,title:"2.腰椎術後活動注意事項",url:"https://www.youtube.com/embed/Cl2xVJwOgU0"},
+  {id:3,title:"3.血液透析瘻管自我照護",url:"https://www.youtube.com/embed/a6lOmFIe_Qo"},
+  {id:4,title:"4.人工血管照護",url:"https://www.youtube.com/embed/Cl2xVJwOgU0"},
+  {id:5,title:"5.術後傷口照護",url:"https://www.youtube.com/embed/a6lOmFIe_Qo"},
+  {id:6,title:"6.減重手術後的症狀照護",url:"https://www.youtube.com/embed/Cl2xVJwOgU0"},
+  {id:7,title:"7.傾倒症候群",url:"https://www.youtube.com/embed/a6lOmFIe_Qo"},
+  {id:8,title:"8.緩釋型氣霧吸入器操作技巧",url:"https://www.youtube.com/embed/Cl2xVJwOgU0"},
+  {id:9,title:"9.認識氣喘",url:"https://www.youtube.com/embed/a6lOmFIe_Qo"},
+  {id:10,title:"10.低血糖處理與預防",url:"https://www.youtube.com/embed/Cl2xVJwOgU0"},
+  {id:11,title:"11.心臟衰竭自我照護",url:"https://www.youtube.com/embed/a6lOmFIe_Qo"},
+  {id:12,title:"12.認識B、C型肝炎",url:"https://www.youtube.com/embed/Cl2xVJwOgU0"},
+  {id:13,title:"13.心絞痛不是小事，用藥知識要知道",url:"https://www.youtube.com/embed/a6lOmFIe_Qo"},
+  {id:14,title:"14.2分鐘認識骨質疏鬆症",url:"https://www.youtube.com/embed/Cl2xVJwOgU0"},
+  {id:15,title:"15.磷磷總總知多少",url:"https://www.youtube.com/embed/a6lOmFIe_Qo"},
+  {id:16,title:"16.肌不可失！活力天天練",url:"https://www.youtube.com/embed/Cl2xVJwOgU0"}
+];
+
+let votesLeft = 3;
+let voted = [];
+
+function renderVideos() {
+  const container = document.getElementById("videos");
+  container.innerHTML = "";
+
+  videos.forEach(video => {
+    const card = document.createElement("div");
+    card.className = "video-card";
+
+    card.innerHTML = `
+      <div class="video-title">${video.title}</div>
+      <iframe src="${video.url}" allowfullscreen></iframe>
+      <button id="btn-${video.id}">投票</button>
+    `;
+    container.appendChild(card);
+
+    document.getElementById(`btn-${video.id}`).addEventListener("click", () => vote(video.id));
+  });
+}
+
+function vote(videoId) {
+  if(votesLeft <= 0) { alert("你已經用完3票"); return; }
+  if(voted.includes(videoId)) { alert("你已經投過這部影片"); return; }
+
+  fetch(GOOGLE_APPS_SCRIPT_URL, {
+    method:"POST",
+    body: JSON.stringify({videoId}),
+    headers: {"Content-Type":"application/json"}
+  })
+  .then(res => res.json())
+  .then(data => {
+    if(data.status === "success") {
+      votesLeft--;
+      voted.push(videoId);
+      document.getElementById(`btn-${videoId}`).disabled = true;
+      alert("投票成功！");
+      if(votesLeft===0) document.querySelectorAll("button").forEach(b=>b.disabled=true);
+    } else {
+      alert("投票失敗："+data.message);
+    }
+  })
+  .catch(err => {
+    console.error(err);
+    alert("投票失敗，請稍後再試！");
+  });
+}
+
+renderVideos();
+</script>
+</body>
+</html>
